@@ -1,5 +1,5 @@
--- ModernUILib.lua - All-in-One Modern Roblox GUI Library v1.0
--- By Copilot, 2025
+-- ModernUILib.lua - All-in-One Modern Roblox GUI Library v3.0 (Mobile Optimized)
+-- By Copilot, 2025 (mod by arakugphonevrj)
 -- Fitur: Window, Tab, Section, Toggle, Button, Slider, Dropdown, InputBox, KeyPicker, ColorPicker,
 -- List/Scrolling, Save-Load Config, Theme Manager, Modal/Popup, Notification, Auto Responsif
 
@@ -106,11 +106,8 @@ end
 
 --==[ Responsif Layout Helper ]==--
 local function getWindowSize()
-    if UserInputService.TouchEnabled then
-        return UDim2.new(0.97,0,0.92,0), UDim2.new(0.5,0,0.05,0)
-    else
-        return UDim2.new(0,540,0,400), UDim2.new(0.5,-270,0.5,-200)
-    end
+    -- Lebar 95%, tinggi 88%, posisi tengah
+    return UDim2.new(0.95,0,0.88,0), UDim2.new(0.5,-0.475*workspace.CurrentCamera.ViewportSize.X,0.5,-0.44*workspace.CurrentCamera.ViewportSize.Y)
 end
 
 --==[ Main API ]==--
@@ -122,18 +119,56 @@ function ModernUILib:CreateWindow(opts)
     screen.IgnoreGuiInset = true
 
     local winSize, winPos = getWindowSize()
-
     local main = Instance.new("Frame", screen)
     main.Size = winSize
     main.Position = winPos
     main.BackgroundColor3 = CUR_THEME.Main
+    main.BackgroundTransparency = 0.23 -- Sedikit transparan
     main.BorderSizePixel = 0
     main.AnchorPoint = Vector2.new(0.5,0.5)
     main.Active = true
     main.ZIndex = 2
+
+    -- Rounded corner
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 18)
+    corner.Parent = main
+
     shadow(main)
     makeDraggable(main)
 
+    -- === TOMBOL SHOW/HIDE ===
+    -- Pakai tombol bulat di pojok kiri atas, emoji 🗿
+    local toggleBtn = Instance.new("TextButton")
+    toggleBtn.Name = "ToggleButton"
+    toggleBtn.Size = UDim2.new(0, 38, 0, 38)
+    toggleBtn.Position = UDim2.new(0, 12, 0, 12)
+    toggleBtn.BackgroundTransparency = 0.35
+    toggleBtn.BackgroundColor3 = CUR_THEME.Accent
+    toggleBtn.Text = "🗿"
+    toggleBtn.Font = Enum.Font.GothamBlack
+    toggleBtn.TextSize = 26
+    toggleBtn.TextColor3 = Color3.new(1,1,1)
+    toggleBtn.Parent = screen
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(1,0)
+    btnCorner.Parent = toggleBtn
+    toggleBtn.ZIndex = 100
+
+    local hidden = false
+    toggleBtn.MouseButton1Click:Connect(function()
+        hidden = not hidden
+        main.Visible = not hidden
+    end)
+
+    -- Jika mau: hide GUI via RightShift juga (opsional, untuk test di PC/dev)
+    UserInputService.InputBegan:Connect(function(input, gp)
+        if not gp and input.KeyCode == Enum.KeyCode.RightShift then
+            hidden = not hidden
+            main.Visible = not hidden
+        end
+    end)
+    
     local titleBar = Instance.new("Frame", main)
     titleBar.Size = UDim2.new(1,0,0,38)
     titleBar.BackgroundColor3 = CUR_THEME.Accent
