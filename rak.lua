@@ -244,19 +244,19 @@ function ModernUILib:CreateWindow(opts)
 
     function windowObj:CreateTab(opts)
         local tabName = opts.Name or ("Tab"..tostring(#tabs+1))
-        local tab = Instance.new("Frame", main)
-        tab.Name = "TAB_"..tabName
-        tab.BackgroundColor3 = CUR_THEME.Tab
-        tab.BackgroundTransparency = 0.13
-        tab.BorderSizePixel = 0
-        tab.Size = UDim2.new(1,-120,1,-38)
-        tab.Position = UDim2.new(0,120,0,38)
-        tab.Visible = false
-        tab.ZIndex = 3
-        applyCorners(tab, 20)
-        shadow(tab, 12, 3)
+        local tabFrame = Instance.new("Frame", main)
+        tabFrame.Name = "TAB_"..tabName
+        tabFrame.BackgroundColor3 = CUR_THEME.Tab
+        tabFrame.BackgroundTransparency = 0.13
+        tabFrame.BorderSizePixel = 0
+        tabFrame.Size = UDim2.new(1,-120,1,-38)
+        tabFrame.Position = UDim2.new(0,120,0,38)
+        tabFrame.Visible = false
+        tabFrame.ZIndex = 3
+        applyCorners(tabFrame, 20)
+        shadow(tabFrame, 12, 3)
 
-        local layout = Instance.new("UIListLayout", tab)
+        local layout = Instance.new("UIListLayout", tabFrame)
         layout.Padding = UDim.new(0,14)
         layout.SortOrder = Enum.SortOrder.LayoutOrder
 
@@ -275,44 +275,47 @@ function ModernUILib:CreateWindow(opts)
         btn.ZIndex = 4
         applyCorners(btn, 12)
         btn.MouseEnter:Connect(function()
-            if curTab~=tab then
+            if curTab~=tabFrame then
                 TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = CUR_THEME.Button}):Play()
             end
         end)
         btn.MouseLeave:Connect(function()
-            if curTab~=tab then
+            if curTab~=tabFrame then
                 TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = CUR_THEME.Tab}):Play()
             end
         end)
         btn.MouseButton1Click:Connect(function()
-            for _, t in pairs(tabs) do t.Visible=false end
+            for _, t in pairs(tabs) do t.Frame.Visible=false end
             for _, b in pairs(tabBtns) do TweenService:Create(b, TweenInfo.new(0.13), {BackgroundColor3 = CUR_THEME.Tab}):Play() end
-            tab.Visible=true
+            tabFrame.Visible=true
             TweenService:Create(btn, TweenInfo.new(0.13), {BackgroundColor3 = CUR_THEME.Accent}):Play()
-            curTab = tab
+            curTab = tabFrame
         end)
         table.insert(tabBtns, btn)
-        table.insert(tabs, tab)
-        if #tabs==1 then tab.Visible=true curTab=tab end
+        table.insert(tabs, {Frame = tabFrame})
+        if #tabs==1 then tabFrame.Visible=true curTab=tabFrame end
 
-        --==[ Section ]==--
-        function tab:CreateSection(name)
-            local sectionLbl = Instance.new("TextLabel", tab)
+        -- Tab Lua object
+        local tabObj = {}
+        tabObj.Frame = tabFrame
+
+        -- SEMUA method tab, parent ke tabFrame
+        function tabObj:CreateSection(name)
+            local sectionLbl = Instance.new("TextLabel", tabFrame)
             sectionLbl.Size = UDim2.new(1,0,0,26)
             sectionLbl.BackgroundTransparency = 1
             sectionLbl.Font = Enum.Font.GothamBold
             sectionLbl.TextColor3 = CUR_THEME.Section
             sectionLbl.Text = name or "Section"
             sectionLbl.TextSize = 17
-            sectionLbl.LayoutOrder = 1000 + #tab:GetChildren()
+            sectionLbl.LayoutOrder = 1000 + #tabFrame:GetChildren()
         end
 
-        --==[ Toggle ]==--
-        function tab:CreateToggle(opt)
-            local holder = Instance.new("Frame", tab)
+        function tabObj:CreateToggle(opt)
+            local holder = Instance.new("Frame", tabFrame)
             holder.Size = UDim2.new(1,-24,0,36)
             holder.BackgroundTransparency = 1
-            holder.LayoutOrder = #tab:GetChildren()
+            holder.LayoutOrder = #tabFrame:GetChildren()
 
             local name = Instance.new("TextLabel", holder)
             name.Text = opt.Name or "Toggle"
@@ -347,9 +350,8 @@ function ModernUILib:CreateWindow(opts)
             tglBtn.MouseLeave:Connect(function() TweenService:Create(tglBtn, TweenInfo.new(0.13), {BackgroundColor3 = opt.CurrentValue and CUR_THEME.Accent or CUR_THEME.Input}):Play() end)
         end
 
-        --==[ Button ]==--
-        function tab:CreateButton(opt)
-            local btn = Instance.new("TextButton", tab)
+        function tabObj:CreateButton(opt)
+            local btn = Instance.new("TextButton", tabFrame)
             btn.Size = UDim2.new(1,-24,0,36)
             btn.BackgroundColor3 = CUR_THEME.Button
             btn.BackgroundTransparency = 0.10
@@ -359,7 +361,7 @@ function ModernUILib:CreateWindow(opts)
             btn.Text = opt.Name or "Button"
             btn.BorderSizePixel = 0
             btn.AutoButtonColor = false
-            btn.LayoutOrder = #tab:GetChildren()
+            btn.LayoutOrder = #tabFrame:GetChildren()
             applyCorners(btn, 13)
             local st = Instance.new("UIStroke", btn)
             st.Thickness = 1.1
@@ -373,15 +375,14 @@ function ModernUILib:CreateWindow(opts)
             btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(0.14), {BackgroundColor3 = CUR_THEME.Button}):Play() end)
         end
 
-        --==[ Slider ]==--
-        function tab:CreateSlider(opt)
+        function tabObj:CreateSlider(opt)
             local min, max, inc = opt.Range[1] or 0, opt.Range[2] or 100, opt.Increment or 1
             local value = opt.CurrentValue or min
 
-            local holder = Instance.new("Frame", tab)
+            local holder = Instance.new("Frame", tabFrame)
             holder.Size = UDim2.new(1,-24,0,38)
             holder.BackgroundTransparency = 1
-            holder.LayoutOrder = #tab:GetChildren()
+            holder.LayoutOrder = #tabFrame:GetChildren()
 
             local lbl = Instance.new("TextLabel", holder)
             lbl.Size = UDim2.new(1,0,0,16)
@@ -441,12 +442,11 @@ function ModernUILib:CreateWindow(opts)
             end)
         end
 
-        --==[ Dropdown (Single/Multi) ]==--
-        function tab:CreateDropdown(opt)
-            local holder = Instance.new("Frame", tab)
+        function tabObj:CreateDropdown(opt)
+            local holder = Instance.new("Frame", tabFrame)
             holder.Size = UDim2.new(1,-24,0,36)
             holder.BackgroundTransparency = 1
-            holder.LayoutOrder = #tab:GetChildren()
+            holder.LayoutOrder = #tabFrame:GetChildren()
 
             local lbl = Instance.new("TextLabel", holder)
             lbl.Size = UDim2.new(0.5,0,1,0)
@@ -533,12 +533,11 @@ function ModernUILib:CreateWindow(opts)
             updateText()
         end
 
-        --==[ InputBox/TextBox ]==--
-        function tab:CreateInputBox(opt)
-            local holder = Instance.new("Frame", tab)
+        function tabObj:CreateInputBox(opt)
+            local holder = Instance.new("Frame", tabFrame)
             holder.Size = UDim2.new(1,-24,0,38)
             holder.BackgroundTransparency = 1
-            holder.LayoutOrder = #tab:GetChildren()
+            holder.LayoutOrder = #tabFrame:GetChildren()
 
             local lbl = Instance.new("TextLabel", holder)
             lbl.Size = UDim2.new(0.5,0,1,0)
@@ -570,12 +569,11 @@ function ModernUILib:CreateWindow(opts)
             end)
         end
 
-        --==[ KeyPicker ]==--
-        function tab:CreateKeyPicker(opt)
-            local holder = Instance.new("Frame", tab)
+        function tabObj:CreateKeyPicker(opt)
+            local holder = Instance.new("Frame", tabFrame)
             holder.Size = UDim2.new(1,-24,0,36)
             holder.BackgroundTransparency = 1
-            holder.LayoutOrder = #tab:GetChildren()
+            holder.LayoutOrder = #tabFrame:GetChildren()
 
             local lbl = Instance.new("TextLabel", holder)
             lbl.Size = UDim2.new(0.5,0,1,0)
@@ -612,12 +610,11 @@ function ModernUILib:CreateWindow(opts)
             end)
         end
 
-        --==[ ColorPicker (Simple) ]==--
-        function tab:CreateColorPicker(opt)
-            local holder = Instance.new("Frame", tab)
+        function tabObj:CreateColorPicker(opt)
+            local holder = Instance.new("Frame", tabFrame)
             holder.Size = UDim2.new(1,-24,0,38)
             holder.BackgroundTransparency = 1
-            holder.LayoutOrder = #tab:GetChildren()
+            holder.LayoutOrder = #tabFrame:GetChildren()
 
             local lbl = Instance.new("TextLabel", holder)
             lbl.Size = UDim2.new(0.5,0,1,0)
@@ -653,12 +650,11 @@ function ModernUILib:CreateWindow(opts)
             end)
         end
 
-        --==[ List/ScrollingList ]==--
-        function tab:CreateList(opt)
-            local holder = Instance.new("Frame", tab)
+        function tabObj:CreateList(opt)
+            local holder = Instance.new("Frame", tabFrame)
             holder.Size = UDim2.new(1,-24,0,120)
             holder.BackgroundTransparency = 1
-            holder.LayoutOrder = #tab:GetChildren()
+            holder.LayoutOrder = #tabFrame:GetChildren()
 
             local scroll = Instance.new("ScrollingFrame", holder)
             scroll.Size = UDim2.new(1,0,1,0)
@@ -687,7 +683,7 @@ function ModernUILib:CreateWindow(opts)
             end)
         end
 
-        return tab
+        return tabObj
     end
 
     function windowObj:Notification(opt)
