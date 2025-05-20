@@ -1,7 +1,8 @@
--- ModernUILib.lua - All-in-One Modern Roblox GUI Library v3.0 (Mobile Optimized)
--- By Copilot, 2025 (mod by arakugphonevrj)
+-- ModernUILib.lua - All-in-One Modern Roblox GUI Library v3.1 (Mobile Optimized, Visual Enhancement)
+-- By Copilot, 2025 (mod & enhanced by arakugphonevrj)
 -- Fitur: Window, Tab, Section, Toggle, Button, Slider, Dropdown, InputBox, KeyPicker, ColorPicker,
 -- List/Scrolling, Save-Load Config, Theme Manager, Modal/Popup, Notification, Auto Responsif
+-- Enhanced: Rounded everywhere, more shadow & accent, less solid color, gradients, dragable modals & dropdown, subtle animations
 
 local ModernUILib = {}
 ModernUILib.__index = ModernUILib
@@ -35,32 +36,32 @@ function ModernUILib.GetTheme()
     return CUR_THEME
 end
 
---==[ Utility ]==--
-local function ripple(btn)
-    local circle = Instance.new("Frame")
-    circle.Size = UDim2.new(0,0,0,0)
-    circle.BackgroundColor3 = Color3.fromRGB(255,255,255)
-    circle.BackgroundTransparency = 0.7
-    circle.BorderSizePixel = 0
-    circle.AnchorPoint = Vector2.new(0.5, 0.5)
-    circle.Position = UDim2.new(0.5,0,0.5,0)
-    circle.ClipsDescendants = true
-    circle.ZIndex = 6
-    circle.Parent = btn
-    local max = math.max(btn.AbsoluteSize.X, btn.AbsoluteSize.Y)*1.5
-    TweenService:Create(circle, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {Size=UDim2.new(0, max, 0, max), BackgroundTransparency=1}):Play()
-    task.spawn(function() wait(0.45) circle:Destroy() end)
+--==[ Utility (Corners, Gradient, Shadow, Drag) ]==--
+local function applyCorners(obj, radius)
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, radius or 16)
+    c.Parent = obj
 end
 
-local function shadow(obj)
+local function applyGradient(obj, c1, c2)
+    local grad = Instance.new("UIGradient")
+    grad.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, c1 or CUR_THEME.Main),
+        ColorSequenceKeypoint.new(1, c2 or CUR_THEME.Tab)
+    }
+    grad.Rotation = 20
+    grad.Parent = obj
+end
+
+local function shadow(obj, thick, z)
     local s = Instance.new("ImageLabel")
     s.Name = "Shadow"
     s.Image = "rbxassetid://1316045217"
     s.BackgroundTransparency = 1
     s.ImageTransparency = 0.7
-    s.Size = UDim2.new(1,18,1,18)
-    s.Position = UDim2.new(0,-9,0,-9)
-    s.ZIndex = obj.ZIndex-1
+    s.Size = UDim2.new(1,thick or 18,1,thick or 18)
+    s.Position = UDim2.new(0,-(thick or 9),0,-(thick or 9))
+    s.ZIndex = (z or obj.ZIndex or 1) - 1
     s.Parent = obj
 end
 
@@ -90,6 +91,23 @@ local function makeDraggable(frame, dragHandle)
             frame.Position = UDim2.new(pos.X.Scale, pos.X.Offset + delta.X, pos.Y.Scale, pos.Y.Offset + delta.Y)
         end
     end)
+end
+
+local function ripple(btn)
+    local circle = Instance.new("Frame")
+    circle.Size = UDim2.new(0,0,0,0)
+    circle.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    circle.BackgroundTransparency = 0.7
+    circle.BorderSizePixel = 0
+    circle.AnchorPoint = Vector2.new(0.5, 0.5)
+    circle.Position = UDim2.new(0.5,0,0.5,0)
+    circle.ClipsDescendants = true
+    circle.ZIndex = 6
+    circle.Parent = btn
+    applyCorners(circle, 99)
+    local max = math.max(btn.AbsoluteSize.X, btn.AbsoluteSize.Y)*1.5
+    TweenService:Create(circle, TweenInfo.new(0.4, Enum.EasingStyle.Quint), {Size=UDim2.new(0, max, 0, max), BackgroundTransparency=1}):Play()
+    task.spawn(function() wait(0.45) circle:Destroy() end)
 end
 
 --==[ Save/Load Config ]==--
@@ -123,47 +141,49 @@ function ModernUILib:CreateWindow(opts)
     main.Position = winPos
     main.AnchorPoint = Vector2.new(0.5,0.5)
     main.BackgroundColor3 = CUR_THEME.Main
-    main.BackgroundTransparency = 0.23
+    main.BackgroundTransparency = 0.32 -- lebih transparan
     main.BorderSizePixel = 0
     main.Active = true
     main.ZIndex = 2
-
-    -- Rounded corner
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 18)
-    corner.Parent = main
-
-    shadow(main)
+    applyCorners(main, 22)
+    applyGradient(main, CUR_THEME.Main, CUR_THEME.Tab)
+    shadow(main, 28, 2)
     makeDraggable(main)
 
     -- === TOMBOL SHOW/HIDE ===
-    -- Letakkan tombol di tengah atas layar
     local toggleBtn = Instance.new("TextButton")
     toggleBtn.Name = "ToggleButton"
     toggleBtn.Size = UDim2.new(0, 38, 0, 38)
-    toggleBtn.AnchorPoint = Vector2.new(0.5, 0) -- center secara horizontal
-    toggleBtn.Position = UDim2.new(0.5, 0, 0, 12) -- 12px dari atas, center horizontal
-    toggleBtn.BackgroundTransparency = 0.35
+    toggleBtn.AnchorPoint = Vector2.new(0.5, 0)
+    toggleBtn.Position = UDim2.new(0.5, 0, 0, 12)
+    toggleBtn.BackgroundTransparency = 0.45
     toggleBtn.BackgroundColor3 = CUR_THEME.Accent
     toggleBtn.Text = "🗿"
     toggleBtn.Font = Enum.Font.GothamBlack
     toggleBtn.TextSize = 26
     toggleBtn.TextColor3 = Color3.new(1,1,1)
     toggleBtn.Parent = screen
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(1,0)
-    btnCorner.Parent = toggleBtn
+    applyCorners(toggleBtn, 22)
+    shadow(toggleBtn, 14, 100)
+    local btnHighlight = Instance.new("UIStroke", toggleBtn)
+    btnHighlight.Thickness = 1.2
+    btnHighlight.Transparency = 0.47
+    btnHighlight.Color = CUR_THEME.Button
     toggleBtn.ZIndex = 100
 
     local hidden = false
     toggleBtn.MouseButton1Click:Connect(function()
         hidden = not hidden
+        TweenService:Create(main, TweenInfo.new(0.19), {BackgroundTransparency = hidden and 1 or 0.32}):Play()
+        wait(0.14)
         main.Visible = not hidden
     end)
 
     UserInputService.InputBegan:Connect(function(input, gp)
         if not gp and input.KeyCode == Enum.KeyCode.RightShift then
             hidden = not hidden
+            TweenService:Create(main, TweenInfo.new(0.19), {BackgroundTransparency = hidden and 1 or 0.32}):Play()
+            wait(0.14)
             main.Visible = not hidden
         end
     end)
@@ -171,8 +191,19 @@ function ModernUILib:CreateWindow(opts)
     local titleBar = Instance.new("Frame", main)
     titleBar.Size = UDim2.new(1,0,0,38)
     titleBar.BackgroundColor3 = CUR_THEME.Accent
+    titleBar.BackgroundTransparency = 0.11
     titleBar.BorderSizePixel = 0
     titleBar.ZIndex = 3
+    applyCorners(titleBar, 20)
+    shadow(titleBar, 8, 3)
+    makeDraggable(main, titleBar)
+
+    local accentLine = Instance.new("Frame", titleBar)
+    accentLine.Size = UDim2.new(1,0,0,2)
+    accentLine.Position = UDim2.new(0,0,1,-2)
+    accentLine.BackgroundColor3 = CUR_THEME.Button
+    accentLine.BackgroundTransparency = 0.2
+    accentLine.ZIndex = 4
 
     local title = Instance.new("TextLabel", titleBar)
     title.Text = (opts.Name or "Modern UI")..(opts.Subtitle and (" - "..opts.Subtitle) or "")
@@ -189,8 +220,11 @@ function ModernUILib:CreateWindow(opts)
     tabBar.Size = UDim2.new(0,120,1,-38)
     tabBar.Position = UDim2.new(0,0,0,38)
     tabBar.BackgroundColor3 = CUR_THEME.Tab
+    tabBar.BackgroundTransparency = 0.18
     tabBar.BorderSizePixel = 0
     tabBar.ZIndex = 3
+    applyCorners(tabBar, 18)
+    shadow(tabBar, 10, 3)
 
     main.ChildAdded:Connect(function(child)
         if child:IsA("Frame") and child.Name:find("^TAB_") then
@@ -207,11 +241,14 @@ function ModernUILib:CreateWindow(opts)
         local tab = Instance.new("Frame", main)
         tab.Name = "TAB_"..tabName
         tab.BackgroundColor3 = CUR_THEME.Tab
+        tab.BackgroundTransparency = 0.13
         tab.BorderSizePixel = 0
         tab.Size = UDim2.new(1,-120,1,-38)
         tab.Position = UDim2.new(0,120,0,38)
         tab.Visible = false
         tab.ZIndex = 3
+        applyCorners(tab, 20)
+        shadow(tab, 12, 3)
 
         local layout = Instance.new("UIListLayout", tab)
         layout.Padding = UDim.new(0,14)
@@ -221,6 +258,7 @@ function ModernUILib:CreateWindow(opts)
         btn.Size = UDim2.new(1,0,0,44)
         btn.Position = UDim2.new(0,0,0,44*(#tabs))
         btn.BackgroundColor3 = (#tabs==0) and CUR_THEME.Accent or CUR_THEME.Tab
+        btn.BackgroundTransparency = 0.08
         btn.TextColor3 = CUR_THEME.Text
         btn.Font = Enum.Font.Gotham
         btn.TextSize = 16
@@ -229,17 +267,22 @@ function ModernUILib:CreateWindow(opts)
         btn.AutoButtonColor = false
         btn.BorderSizePixel = 0
         btn.ZIndex = 4
+        applyCorners(btn, 12)
         btn.MouseEnter:Connect(function()
-            if curTab~=tab then btn.BackgroundColor3 = CUR_THEME.Button end
+            if curTab~=tab then
+                TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = CUR_THEME.Button}):Play()
+            end
         end)
         btn.MouseLeave:Connect(function()
-            if curTab~=tab then btn.BackgroundColor3 = CUR_THEME.Tab end
+            if curTab~=tab then
+                TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = CUR_THEME.Tab}):Play()
+            end
         end)
         btn.MouseButton1Click:Connect(function()
             for _, t in pairs(tabs) do t.Visible=false end
-            for _, b in pairs(tabBtns) do b.BackgroundColor3 = CUR_THEME.Tab end
+            for _, b in pairs(tabBtns) do TweenService:Create(b, TweenInfo.new(0.13), {BackgroundColor3 = CUR_THEME.Tab}):Play() end
             tab.Visible=true
-            btn.BackgroundColor3 = CUR_THEME.Accent
+            TweenService:Create(btn, TweenInfo.new(0.13), {BackgroundColor3 = CUR_THEME.Accent}):Play()
             curTab = tab
         end)
         table.insert(tabBtns, btn)
@@ -278,18 +321,24 @@ function ModernUILib:CreateWindow(opts)
             tglBtn.Size = UDim2.new(0,42,0,24)
             tglBtn.Position = UDim2.new(1,-54,0.5,-12)
             tglBtn.BackgroundColor3 = opt.CurrentValue and CUR_THEME.Accent or CUR_THEME.Input
+            tglBtn.BackgroundTransparency = 0.10
             tglBtn.Text = ""
             tglBtn.AutoButtonColor = false
             tglBtn.BorderSizePixel = 0
             tglBtn.ZIndex = 4
+            applyCorners(tglBtn, 13)
+            local st = Instance.new("UIStroke", tglBtn)
+            st.Thickness = 1.1
+            st.Transparency = 0.5
+            st.Color = CUR_THEME.Button
             tglBtn.MouseButton1Click:Connect(function()
                 opt.CurrentValue = not opt.CurrentValue
-                tglBtn.BackgroundColor3 = opt.CurrentValue and CUR_THEME.Accent or CUR_THEME.Input
+                TweenService:Create(tglBtn, TweenInfo.new(0.15), {BackgroundColor3 = opt.CurrentValue and CUR_THEME.Accent or CUR_THEME.Input}):Play()
                 ripple(tglBtn)
                 if opt.Callback then task.spawn(opt.Callback, opt.CurrentValue) end
             end)
-            tglBtn.MouseEnter:Connect(function() tglBtn.BackgroundColor3 = CUR_THEME.Button end)
-            tglBtn.MouseLeave:Connect(function() tglBtn.BackgroundColor3 = opt.CurrentValue and CUR_THEME.Accent or CUR_THEME.Input end)
+            tglBtn.MouseEnter:Connect(function() TweenService:Create(tglBtn, TweenInfo.new(0.13), {BackgroundColor3 = CUR_THEME.Button}):Play() end)
+            tglBtn.MouseLeave:Connect(function() TweenService:Create(tglBtn, TweenInfo.new(0.13), {BackgroundColor3 = opt.CurrentValue and CUR_THEME.Accent or CUR_THEME.Input}):Play() end)
         end
 
         --==[ Button ]==--
@@ -297,6 +346,7 @@ function ModernUILib:CreateWindow(opts)
             local btn = Instance.new("TextButton", tab)
             btn.Size = UDim2.new(1,-24,0,36)
             btn.BackgroundColor3 = CUR_THEME.Button
+            btn.BackgroundTransparency = 0.10
             btn.TextColor3 = Color3.new(1,1,1)
             btn.Font = Enum.Font.GothamMedium
             btn.TextSize = 18
@@ -304,12 +354,17 @@ function ModernUILib:CreateWindow(opts)
             btn.BorderSizePixel = 0
             btn.AutoButtonColor = false
             btn.LayoutOrder = #tab:GetChildren()
+            applyCorners(btn, 13)
+            local st = Instance.new("UIStroke", btn)
+            st.Thickness = 1.1
+            st.Transparency = 0.45
+            st.Color = CUR_THEME.Accent
             btn.MouseButton1Click:Connect(function()
                 ripple(btn)
                 if opt.Callback then task.spawn(opt.Callback) end
             end)
-            btn.MouseEnter:Connect(function() btn.BackgroundColor3 = CUR_THEME.Accent end)
-            btn.MouseLeave:Connect(function() btn.BackgroundColor3 = CUR_THEME.Button end)
+            btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(0.14), {BackgroundColor3 = CUR_THEME.Accent}):Play() end)
+            btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(0.14), {BackgroundColor3 = CUR_THEME.Button}):Play() end)
         end
 
         --==[ Slider ]==--
@@ -335,12 +390,16 @@ function ModernUILib:CreateWindow(opts)
             bar.Size = UDim2.new(1, -95, 0, 8)
             bar.Position = UDim2.new(0,0,0,24)
             bar.BackgroundColor3 = CUR_THEME.Input
+            bar.BackgroundTransparency = 0.14
             bar.BorderSizePixel = 0
+            applyCorners(bar, 6)
 
             local fill = Instance.new("Frame", bar)
             fill.BackgroundColor3 = CUR_THEME.Accent
+            fill.BackgroundTransparency = 0
             fill.BorderSizePixel = 0
             fill.Size = UDim2.new((value-min)/(max-min),0,1,0)
+            applyCorners(fill, 5)
 
             local knob = Instance.new("Frame", bar)
             knob.Size = UDim2.new(0,18,0,18)
@@ -348,7 +407,9 @@ function ModernUILib:CreateWindow(opts)
             knob.BackgroundColor3 = CUR_THEME.Accent
             knob.BorderSizePixel = 0
             knob.ZIndex = 5
-            shadow(knob)
+            knob.BackgroundTransparency = 0.05
+            applyCorners(knob, 9)
+            shadow(knob, 8, 5)
 
             local dragging = false
             bar.InputBegan:Connect(function(input)
@@ -394,20 +455,30 @@ function ModernUILib:CreateWindow(opts)
             drop.Size = UDim2.new(0.5,0,1,0)
             drop.Position = UDim2.new(0.5,0,0,0)
             drop.BackgroundColor3 = CUR_THEME.Dropdown
+            drop.BackgroundTransparency = 0.09
             drop.BorderSizePixel = 0
             drop.Text = tostring(opt.CurrentOption and (type(opt.CurrentOption)=="table" and opt.CurrentOption[1] or opt.CurrentOption) or "Select")
             drop.TextColor3 = CUR_THEME.Text
             drop.Font = Enum.Font.Gotham
             drop.TextSize = 15
             drop.AutoButtonColor = false
+            applyCorners(drop, 12)
+            local st = Instance.new("UIStroke", drop)
+            st.Thickness = 1.1
+            st.Transparency = 0.4
+            st.Color = CUR_THEME.Accent
 
             local open = false
             local list = Instance.new("Frame", holder)
             list.BackgroundColor3 = CUR_THEME.Scroll
+            list.BackgroundTransparency = 0.07
             list.Size = UDim2.new(0.5,0,0,#opt.Options*28)
             list.Position = UDim2.new(0.5,0,1,0)
             list.Visible = false
             list.ZIndex = 6
+            applyCorners(list, 12)
+            shadow(list, 9, 7)
+            makeDraggable(list, list)
             local layout = Instance.new("UIListLayout", list)
             layout.Padding = UDim.new(0,0)
             layout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -422,11 +493,13 @@ function ModernUILib:CreateWindow(opts)
                 local item = Instance.new("TextButton", list)
                 item.Size = UDim2.new(1,0,0,28)
                 item.BackgroundColor3 = CUR_THEME.Scroll
+                item.BackgroundTransparency = 0.12
                 item.TextColor3 = CUR_THEME.Text
                 item.Font = Enum.Font.Gotham
                 item.TextSize = 15
                 item.Text = o
                 item.AutoButtonColor = false
+                applyCorners(item, 10)
                 item.MouseButton1Click:Connect(function()
                     if opt.MultipleOptions then
                         if table.find(sel, o) then
@@ -442,12 +515,13 @@ function ModernUILib:CreateWindow(opts)
                     updateText()
                     if opt.Callback then task.spawn(opt.Callback, sel) end
                 end)
-                item.MouseEnter:Connect(function() item.BackgroundColor3 = CUR_THEME.Accent end)
-                item.MouseLeave:Connect(function() item.BackgroundColor3 = CUR_THEME.Scroll end)
+                item.MouseEnter:Connect(function() TweenService:Create(item, TweenInfo.new(0.12), {BackgroundColor3 = CUR_THEME.Accent}):Play() end)
+                item.MouseLeave:Connect(function() TweenService:Create(item, TweenInfo.new(0.12), {BackgroundColor3 = CUR_THEME.Scroll}):Play() end)
             end
 
             drop.MouseButton1Click:Connect(function()
                 open = not open
+                TweenService:Create(list, TweenInfo.new(0.16), {BackgroundTransparency = open and 0.07 or 1}):Play()
                 list.Visible = open
             end)
             updateText()
@@ -473,6 +547,7 @@ function ModernUILib:CreateWindow(opts)
             box.Size = UDim2.new(0.5,0,1,0)
             box.Position = UDim2.new(0.5,0,0,0)
             box.BackgroundColor3 = CUR_THEME.Input
+            box.BackgroundTransparency = 0.13
             box.BorderSizePixel = 0
             box.TextColor3 = CUR_THEME.Text
             box.Font = Enum.Font.Gotham
@@ -480,6 +555,7 @@ function ModernUILib:CreateWindow(opts)
             box.Text = opt.Default or ""
             box.PlaceholderText = opt.Placeholder or "Type here..."
             box.ClearTextOnFocus = false
+            applyCorners(box, 10)
 
             box.FocusLost:Connect(function(enter)
                 if opt.Callback then
@@ -508,12 +584,14 @@ function ModernUILib:CreateWindow(opts)
             btn.Size = UDim2.new(0.5,0,1,0)
             btn.Position = UDim2.new(0.5,0,0,0)
             btn.BackgroundColor3 = CUR_THEME.Input
+            btn.BackgroundTransparency = 0.15
             btn.TextColor3 = CUR_THEME.Text
             btn.Font = Enum.Font.Gotham
             btn.TextSize = 15
             btn.Text = opt.DefaultKey or "None"
             btn.BorderSizePixel = 0
             btn.AutoButtonColor = false
+            applyCorners(btn, 10)
 
             btn.MouseButton1Click:Connect(function()
                 btn.Text = "Press key..."
@@ -548,9 +626,11 @@ function ModernUILib:CreateWindow(opts)
             box.Size = UDim2.new(0,38,0,26)
             box.Position = UDim2.new(0.7,0,0.5,-13)
             box.BackgroundColor3 = opt.Default or CUR_THEME.Accent
+            box.BackgroundTransparency = 0.12
             box.BorderSizePixel = 0
             box.Text = ""
             box.AutoButtonColor = false
+            applyCorners(box, 50)
 
             box.MouseButton1Click:Connect(function()
                 local colors = {Color3.fromRGB(255,0,0),Color3.fromRGB(0,255,0),Color3.fromRGB(0,0,255),
@@ -578,8 +658,10 @@ function ModernUILib:CreateWindow(opts)
             scroll.Size = UDim2.new(1,0,1,0)
             scroll.CanvasSize = UDim2.new(0,0,0,0)
             scroll.BackgroundColor3 = CUR_THEME.List
+            scroll.BackgroundTransparency = 0.09
             scroll.BorderSizePixel = 0
             scroll.ScrollBarThickness = 4
+            applyCorners(scroll, 13)
 
             local layout = Instance.new("UIListLayout", scroll)
             layout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -608,9 +690,12 @@ function ModernUILib:CreateWindow(opts)
         notif.Size = UDim2.new(0,330,0,60)
         notif.Position = UDim2.new(0.5,-165,0.1,0)
         notif.BackgroundColor3 = CUR_THEME.Accent
+        notif.BackgroundTransparency = 0.13
         notif.BorderSizePixel = 0
         notif.ZIndex = 30
-        shadow(notif)
+        applyCorners(notif, 16)
+        shadow(notif, 14, 30)
+        makeDraggable(notif, notif)
 
         local icon = Instance.new("ImageLabel", notif)
         icon.BackgroundTransparency = 1
@@ -634,7 +719,7 @@ function ModernUILib:CreateWindow(opts)
         txt.TextYAlignment = Enum.TextYAlignment.Top
 
         notif.BackgroundTransparency = 1
-        TweenService:Create(notif, TweenInfo.new(0.25), {BackgroundTransparency=0}):Play()
+        TweenService:Create(notif, TweenInfo.new(0.25), {BackgroundTransparency=0.13}):Play()
         TweenService:Create(notif, TweenInfo.new(0.25), {Position=UDim2.new(0.5,-165,0.16,0)}):Play()
         task.spawn(function()
             wait(2.5)
@@ -650,9 +735,13 @@ function ModernUILib:CreateWindow(opts)
         modal.Size = UDim2.new(0,320,0,140)
         modal.Position = UDim2.new(0.5,-160,0.45,-70)
         modal.BackgroundColor3 = CUR_THEME.Accent
+        modal.BackgroundTransparency = 0.13
         modal.BorderSizePixel = 0
         modal.ZIndex = 30
-        shadow(modal)
+        applyCorners(modal, 16)
+        applyGradient(modal, CUR_THEME.Accent, CUR_THEME.Button)
+        shadow(modal, 16, 30)
+        makeDraggable(modal, modal)
 
         local txt = Instance.new("TextLabel", modal)
         txt.Text = (opt.Title or "Modal").."\n"..(opt.Content or "")
@@ -669,11 +758,13 @@ function ModernUILib:CreateWindow(opts)
         okBtn.Size = UDim2.new(0.4,0,0,32)
         okBtn.Position = UDim2.new(0.1,0,0.8,0)
         okBtn.BackgroundColor3 = CUR_THEME.Button
+        okBtn.BackgroundTransparency = 0.11
         okBtn.TextColor3 = Color3.new(1,1,1)
         okBtn.Font = Enum.Font.Gotham
         okBtn.TextSize = 16
         okBtn.Text = opt.OkText or "OK"
         okBtn.ZIndex = 32
+        applyCorners(okBtn, 10)
         okBtn.MouseButton1Click:Connect(function()
             if opt.OnOK then opt.OnOK() end
             modal:Destroy()
@@ -684,11 +775,13 @@ function ModernUILib:CreateWindow(opts)
             cancelBtn.Size = UDim2.new(0.4,0,0,32)
             cancelBtn.Position = UDim2.new(0.5,0,0.8,0)
             cancelBtn.BackgroundColor3 = CUR_THEME.Accent
+            cancelBtn.BackgroundTransparency = 0.22
             cancelBtn.TextColor3 = Color3.new(1,1,1)
             cancelBtn.Font = Enum.Font.Gotham
             cancelBtn.TextSize = 16
             cancelBtn.Text = opt.CancelText
             cancelBtn.ZIndex = 32
+            applyCorners(cancelBtn, 10)
             cancelBtn.MouseButton1Click:Connect(function()
                 if opt.OnCancel then opt.OnCancel() end
                 modal:Destroy()
