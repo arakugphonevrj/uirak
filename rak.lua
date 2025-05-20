@@ -106,11 +106,10 @@ end
 
 --==[ Responsif Layout Helper ]==--
 local function getWindowSize()
-    -- Lebar 95%, tinggi 88%, posisi tengah
-    return UDim2.new(0.95,0,0.88,0), UDim2.new(0.5,-0.475*workspace.CurrentCamera.ViewportSize.X,0.5,-0.44*workspace.CurrentCamera.ViewportSize.Y)
+    -- 95% lebar, 88% tinggi, posisi benar-benar center (tengah layar)
+    return UDim2.new(0.95,0,0.88,0), UDim2.new(0.5,0,0.5,0)
 end
 
---==[ Main API ]==--
 function ModernUILib:CreateWindow(opts)
     opts = opts or {}
     local screen = Instance.new("ScreenGui", game:GetService("CoreGui"))
@@ -122,10 +121,10 @@ function ModernUILib:CreateWindow(opts)
     local main = Instance.new("Frame", screen)
     main.Size = winSize
     main.Position = winPos
-    main.BackgroundColor3 = CUR_THEME.Main
-    main.BackgroundTransparency = 0.23 -- Sedikit transparan
-    main.BorderSizePixel = 0
     main.AnchorPoint = Vector2.new(0.5,0.5)
+    main.BackgroundColor3 = CUR_THEME.Main
+    main.BackgroundTransparency = 0.23
+    main.BorderSizePixel = 0
     main.Active = true
     main.ZIndex = 2
 
@@ -138,11 +137,12 @@ function ModernUILib:CreateWindow(opts)
     makeDraggable(main)
 
     -- === TOMBOL SHOW/HIDE ===
-    -- Pakai tombol bulat di pojok kiri atas, emoji 🗿
+    -- Letakkan tombol di tengah atas layar
     local toggleBtn = Instance.new("TextButton")
     toggleBtn.Name = "ToggleButton"
     toggleBtn.Size = UDim2.new(0, 38, 0, 38)
-    toggleBtn.Position = UDim2.new(0, 12, 0, 12)
+    toggleBtn.AnchorPoint = Vector2.new(0.5, 0) -- center secara horizontal
+    toggleBtn.Position = UDim2.new(0.5, 0, 0, 12) -- 12px dari atas, center horizontal
     toggleBtn.BackgroundTransparency = 0.35
     toggleBtn.BackgroundColor3 = CUR_THEME.Accent
     toggleBtn.Text = "🗿"
@@ -161,7 +161,6 @@ function ModernUILib:CreateWindow(opts)
         main.Visible = not hidden
     end)
 
-    -- Jika mau: hide GUI via RightShift juga (opsional, untuk test di PC/dev)
     UserInputService.InputBegan:Connect(function(input, gp)
         if not gp and input.KeyCode == Enum.KeyCode.RightShift then
             hidden = not hidden
