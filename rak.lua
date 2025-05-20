@@ -234,9 +234,15 @@ function ModernUILib:CreateWindow(opts)
         end
     end)
 
+    -- Patch: Use a Lua object to hold methods!
+    local windowObj = {}
+    windowObj.Main = main
+    windowObj.Screen = screen
+
+    -- Tab state
     local tabs, tabBtns, curTab = {}, {}, nil
 
-    function main:CreateTab(opts)
+    function windowObj:CreateTab(opts)
         local tabName = opts.Name or ("Tab"..tostring(#tabs+1))
         local tab = Instance.new("Frame", main)
         tab.Name = "TAB_"..tabName
@@ -684,8 +690,7 @@ function ModernUILib:CreateWindow(opts)
         return tab
     end
 
-    --==[ Notification ]==--
-    function main:Notification(opt)
+    function windowObj:Notification(opt)
         local notif = Instance.new("Frame", screen)
         notif.Size = UDim2.new(0,330,0,60)
         notif.Position = UDim2.new(0.5,-165,0.1,0)
@@ -729,8 +734,7 @@ function ModernUILib:CreateWindow(opts)
         end)
     end
 
-    --==[ Modal/Popup ]==--
-    function main:ShowModal(opt)
+    function windowObj:ShowModal(opt)
         local modal = Instance.new("Frame", screen)
         modal.Size = UDim2.new(0,320,0,140)
         modal.Position = UDim2.new(0.5,-160,0.45,-70)
@@ -789,7 +793,7 @@ function ModernUILib:CreateWindow(opts)
         end
     end
 
-    return main
+    return windowObj
 end
 
 return ModernUILib
