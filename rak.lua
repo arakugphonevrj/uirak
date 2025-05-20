@@ -225,6 +225,11 @@ function ModernUILib:CreateWindow(opts)
     tabBar.ZIndex = 3
     applyCorners(tabBar, 18)
     shadow(tabBar, 10, 3)
++   
++   -- Add UIListLayout to automatically space tab buttons
++   local tabBarLayout = Instance.new("UIListLayout", tabBar)
++   tabBarLayout.Padding = UDim.new(0, 4) -- Adjust padding as needed
++   tabBarLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
     main.ChildAdded:Connect(function(child)
         if child:IsA("Frame") and child.Name:find("^TAB_") then
@@ -262,7 +267,7 @@ function ModernUILib:CreateWindow(opts)
 
         local btn = Instance.new("TextButton", tabBar)
         btn.Size = UDim2.new(1,0,0,44)
-        btn.Position = UDim2.new(0,0,0,44*(#tabs))
+-        btn.Position = UDim2.new(0,0,0,44*(#tabs))
         btn.BackgroundColor3 = (#tabs==0) and CUR_THEME.Accent or CUR_THEME.Tab
         btn.BackgroundTransparency = 0.08
         btn.TextColor3 = CUR_THEME.Text
@@ -274,6 +279,7 @@ function ModernUILib:CreateWindow(opts)
         btn.BorderSizePixel = 0
         btn.ZIndex = 4
         applyCorners(btn, 12)
++       btn.LayoutOrder = #tabs
         btn.MouseEnter:Connect(function()
             if curTab~=tabFrame then
                 TweenService:Create(btn, TweenInfo.new(0.15), {BackgroundColor3 = CUR_THEME.Button}):Play()
